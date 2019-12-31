@@ -13,7 +13,12 @@ app.use(bodyParser.json())
 app.use( require('../routes/jedi'));
 
 //Database mongodb connection
-mongoose.connect('mongodb://localhost:27017/jedi', {useNewUrlParser: true, useUnifiedTopology: true}, 
+mongoose.connect(process.env.DBURL, 
+{   useNewUrlParser: true, 
+    useUnifiedTopology: true,
+    useCreateIndex: true,
+    useFindAndModify: false
+}, 
 (err, response) => {
     if (err) throw err;
 
@@ -25,3 +30,8 @@ app.listen(process.env.PORT, () => {
     console.log('Listening on port 3000');
 }); 
 
+/**
+ * V9myHZz3H8YtJWtb / admin
+
+mongodb+srv://admin:V9myHZz3H8YtJWtb@clusterdemo-zpuis.mongodb.net/Jedi
+ */

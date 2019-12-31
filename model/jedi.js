@@ -1,4 +1,10 @@
 const mongoose = require('mongoose');
+const uniqueValidator = require('mongoose-unique-validator');
+
+let roles = {
+    values: ['ADMIN_ROLE', 'USER_ROLE'],
+    message: '{VALUE} is not valid role'
+}
 
 let Schema = mongoose.Schema;
 let definedSchema = new Schema({
@@ -8,7 +14,8 @@ let definedSchema = new Schema({
     },
     email: {
         type: String, 
-        required: [true, 'email is needed']
+        required: [true, 'email is needed'],
+        unique: true
     },
     password: {
         type: String,
@@ -16,7 +23,8 @@ let definedSchema = new Schema({
     },
     img: {
         type: String,
-        required: false
+        required: false,
+        default: ''
     },
     google: {
         type: Boolean,
@@ -29,8 +37,12 @@ let definedSchema = new Schema({
     },
     role: {
         type: String,
-        default: 'USER_ROLE'
+        default: 'USER_ROLE',
+        enum: roles
     }
 });
+
+//Injects as plugin mongoose validations (path will be changed by the unique field in the error message)
+definedSchema.plugin(uniqueValidator, {message: '{PATH} must be unique'})
 
 module.exports = mongoose.model('Jedi', definedSchema);

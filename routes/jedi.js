@@ -1,12 +1,38 @@
 const express = require('express');
 const app = express();
+//encrypt hash generator
+const bcrypt = require('bcrypt');
+const _ = require('underscore');
 const Jedi = require('../model/jedi');
 
 /**
  * GET: All jedi in DB
  */
 app.get('/jedi', (req, res) => {
-    
+
+    let pageSince = Number(req.query.pageSince || 0)
+    let limitPerPage = Number(req.query.limit || 5)
+
+    Jedi.find({state: true}, 'name email role state img')
+        .skip(pageSince)
+        .limit(limitPerPage)
+        .exec( (err, jedis) => {
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    err: err
+                })
+            }
+            Jedi.countDocuments({state: true}, (err, count) => {
+                res.json({
+                    ok: true,
+                    total: count,
+                    jedis
+                })
+            });
+
+            
+        })
 })
 
 /**
@@ -19,7 +45,7 @@ app.post('/jedi', (req, res) => {
     let jedi = new Jedi({
         name: body.name,
         email: body.email,
-        password: body.password,
+        password: bcrypt.hashSync(body.password, 10), 
         role: body.role
     });
 
@@ -33,7 +59,7 @@ app.post('/jedi', (req, res) => {
 
         res.json({
             ok: true,
-            jedi: userDB
+            message: `User ${userDB.name} with email ${userDB.email} is created!`
         })
     })
    
@@ -45,17 +71,91 @@ app.post('/jedi', (req, res) => {
 app.put('/jedi/:id', (req, res) => {
 
     let id = req.params.id;
+    //filter and copy in a new object field selected
+    let body =  _.pick(req.body, ['name', 'email', 'img', 'role', 'state']);
 
-    res.json({
-      id  
+    Jedi.findByIdAndUpdate(id, body, 
+        {new: true, runValidators: true, context: 'query'}, 
+        (err, jediDB) => {
+
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                err
+            })
+        }
+
+        res.json({
+            ok:true,
+            message: `User ${jediDB.name} is updated`
+        })
     })
+
+   
 })
 
 /**
- * DELETE: delete a jedi in db
+ * DELETE: delete a jedi in db version delete
  */
-app.delete('/jedi', (req, res) => {
-    res.json('delete user');
+/*app.delete('/jedi/:id', (req, res) => {
+    
+    let id = req.params.id;
+
+    Jedi.findByIdAndRemove(id, (err, deletedJedi) => {
+        
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                err
+            })
+        }
+        if (!deletedJedi) {
+           return res.status(400).json({
+               ok: false,
+               message: 'Jedi not found'
+           })
+        }
+
+        res.json({
+            ok: true,
+            message: `Jedi ${deletedJedi} deleted!`
+        })
+        
+    })
+})*/
+
+/**
+ * DELETE: delete a jedi in db version update status
+ */
+app.delete('/jedi/:id', (req, res) => {
+    
+    let id = req.params.id;
+
+    Jedi.findByIdAndUpdate(id, 
+        {state: false},
+        {new: true, runValidators: true, context: 'query'},  
+        (err, deactivatedJedi) => {
+        
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                err
+            })
+        }
+
+        if (!deactivatedJedi) {
+            return res.status(400).json({
+                ok: false, 
+                message: 'Jedi not found!'
+            })
+        }
+
+        res.status(201).json({
+            ok: true,
+            message: `Jedi ${deactivatedJedi.name} is deactivated!`
+        })
+        
+    })
 })
 
 module.exports = app;
