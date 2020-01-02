@@ -18,7 +18,7 @@ let dburl;
 if ( process.env.NODE_ENV === 'dev') {
     dburl = 'mongodb://localhost:27017/jedi'
 } else {
-    dburl = 'mongodb+srv://admin:V9myHZz3H8YtJWtb@clusterdemo-zpuis.mongodb.net/Jedi'
+    dburl = process.env.MONGO_URI
 }
 
 process.env.DBURL = dburl;
