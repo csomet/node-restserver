@@ -45,4 +45,12 @@ let definedSchema = new Schema({
 //Injects as plugin mongoose validations (path will be changed by the unique field in the error message)
 definedSchema.plugin(uniqueValidator, {message: '{PATH} must be unique'})
 
+definedSchema.methods.toJSON = function() {
+    let jedi = this;
+    let jediObject = jedi.toObject();
+    delete jediObject.password;
+
+    return  jediObject;
+}
+
 module.exports = mongoose.model('Jedi', definedSchema);

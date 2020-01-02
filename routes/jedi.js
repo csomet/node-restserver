@@ -4,11 +4,13 @@ const app = express();
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
 const Jedi = require('../model/jedi');
+const { tokenVerify, hasAdminRole } = require('../server/middleware/auth');
 
 /**
  * GET: All jedi in DB
+ * if we specify second param in the app.get we are saying we wanna execute this param (function) as a middleware
  */
-app.get('/jedi', (req, res) => {
+app.get('/jedi', tokenVerify, (req, res) => {
 
     let pageSince = Number(req.query.pageSince || 0)
     let limitPerPage = Number(req.query.limit || 5)
@@ -38,7 +40,7 @@ app.get('/jedi', (req, res) => {
 /**
  * POST: New Jedi
  */
-app.post('/jedi', (req, res) => {
+app.post('/jedi', [tokenVerify, hasAdminRole], (req, res) => {
 
     let body = req.body;
 
@@ -68,7 +70,7 @@ app.post('/jedi', (req, res) => {
 /**
  * PUT: update one jedi in db
  */
-app.put('/jedi/:id', (req, res) => {
+app.put('/jedi/:id', [tokenVerify, hasAdminRole], (req, res) => {
 
     let id = req.params.id;
     //filter and copy in a new object field selected
@@ -85,6 +87,13 @@ app.put('/jedi/:id', (req, res) => {
             })
         }
 
+        if (!jediDB) {
+            res.status(400).json({
+                ok: false,
+                message: 'User not found!'
+            })
+        }
+        console.log(jediDB)
         res.json({
             ok:true,
             message: `User ${jediDB.name} is updated`
@@ -127,7 +136,7 @@ app.put('/jedi/:id', (req, res) => {
 /**
  * DELETE: delete a jedi in db version update status
  */
-app.delete('/jedi/:id', (req, res) => {
+app.delete('/jedi/:id', [tokenVerify, hasAdminRole], (req, res) => {
     
     let id = req.params.id;
 

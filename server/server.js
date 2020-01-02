@@ -10,7 +10,8 @@ app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
 app.use(bodyParser.json())
 
-app.use( require('../routes/jedi'));
+//Routes configurations
+app.use( require('../routes/index'));
 
 //Database mongodb connection
 mongoose.connect(process.env.DBURL, 
