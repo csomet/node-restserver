@@ -6,6 +6,74 @@ const _ = require('underscore');
 const Jedi = require('../model/jedi');
 const { tokenVerify, hasAdminRole } = require('../server/middleware/auth');
 
+
+
+/**
+ * GET: one Jedi details
+ * if we specify second param in the app.get we are saying we wanna execute this param (function) as a middleware
+ */
+app.get('/jedi/:id', tokenVerify, (req, res) => {
+    
+    let id = req.params.id;
+
+    Jedi.findById(id)
+        .populate('rank', 'name')
+        .exec( (err, jediFound) => {
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    err: err
+                })
+            }
+
+            if(!jediFound) {
+                return res.status(404).json({
+                    ok: false,
+                    err: 'Jedi not found!'
+                })
+            }
+          
+            res.json({
+                ok: true,
+                jedi: jediFound
+            })
+            
+        })
+})
+
+
+/**
+ * GET: search for jedi
+ * if we specify second param in the app.get we are saying we wanna execute this param (function) as a middleware
+ */
+app.get('/jedi/find/:qry', tokenVerify, (req, res) => {
+
+        let qry = req.params.qry;
+
+        let regex = new RegExp(qry, 'i');
+
+        Jedi.find({name: regex})
+            .populate('rank', 'name')
+            .exec( (err, jedis) => {
+
+                if (err) {
+                    return res.status(400).json({
+                        ok: false,
+                        err: err
+                    })
+                }
+
+                res.json({
+                    ok: true,
+                    jedis
+                })
+
+            });
+})
+
+
+
+
 /**
  * GET: All jedi in DB
  * if we specify second param in the app.get we are saying we wanna execute this param (function) as a middleware
