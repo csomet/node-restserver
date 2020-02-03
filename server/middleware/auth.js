@@ -14,6 +14,7 @@ let tokenVerify = (req, res, next) => {
             })
         }
 
+        //set jedi from decoded token info
         req.jedi = decoded.jedi;
         next();
     })

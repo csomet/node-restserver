@@ -39,6 +39,10 @@ let definedSchema = new Schema({
         type: String,
         default: 'USER_ROLE',
         enum: roles
+    },
+    rank: {
+        required: true,
+        type: Schema.Types.ObjectId, ref: 'Rank', required: true 
     }
 });
 
