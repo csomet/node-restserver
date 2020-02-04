@@ -23,7 +23,7 @@ mongoose.connect(process.env.DBURL,
 (err, response) => {
     if (err) throw err;
 
-    console.log('Connected to database');
+    console.log('Connected to database ' + response.name);
 
 });
 
